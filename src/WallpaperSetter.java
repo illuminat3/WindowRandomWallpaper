@@ -151,17 +151,30 @@ public class WallpaperSetter extends JFrame {
     }
 
     public static void setWallpaper(String imagePath) {
+        // The name of the script in the resources folder
+        String scriptName = "set_wallpaper.py";
+
         try {
-            String scriptPath = "src/set_wallpaper.py";
+            // Extract the script to a temporary file
+            File tempScript = extractResourceToTempFile(scriptName);
 
-            // Ensure you adjust "python" to the path of your Python interpreter if necessary
-            String[] command = new String[]{"python", scriptPath, imagePath};
+            // Use ProcessBuilder to call the Python script
+            ProcessBuilder pb = new ProcessBuilder("python", tempScript.getAbsolutePath(), imagePath);
+            Process p = pb.start();
 
-            ProcessBuilder processBuilder = new ProcessBuilder(command);
-            // Optionally, set the working directory (not always needed)
-            // processBuilder.directory(new File("path_to_your_project_root"));
+            // Wait for the process to complete and check for errors
+            int exitCode = p.waitFor();
+            if (exitCode != 0) {
+                // Handle error condition
+                LOGGER.log(Level.SEVERE, "Python script exited with error code: " + exitCode);
+            }
 
-            Process process = processBuilder.start();
+            // Clean up the temporary file
+            tempScript.delete();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to execute wallpaper setting script", e);
+        }
+    }
 
             // Wait for the script to complete
             int exitCode = process.waitFor();
