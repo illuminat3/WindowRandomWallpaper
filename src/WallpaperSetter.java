@@ -176,25 +176,30 @@ public class WallpaperSetter extends JFrame {
         }
     }
 
-            // Wait for the script to complete
-            int exitCode = process.waitFor();
-            if (exitCode == 0) {
-                LOGGER.info("Wallpaper set successfully.");
-            } else {
-                LOGGER.severe("Python script to set wallpaper exited with error code: " + exitCode);
-                // Optionally, read and log the error stream
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        LOGGER.severe(line);
-                    }
-                }
-            }
-        } catch (IOException | InterruptedException e) {
-            LOGGER.log(Level.SEVERE, "Failed to set wallpaper using Python script", e);
-            // Restore interrupted status
-            Thread.currentThread().interrupt();
+    private static File extractResourceToTempFile(String resourceName) throws IOException {
+        // Access the resource as a stream
+        InputStream resourceStream = WallpaperSetter.class.getClassLoader().getResourceAsStream(resourceName);
+        if (resourceStream == null) {
+            throw new FileNotFoundException("Could not find resource: " + resourceName);
         }
+
+        // Create a temporary file with .py extension
+        Path tempFile = Files.createTempFile("resource_", ".py");
+        File tempScript = tempFile.toFile();
+        tempScript.deleteOnExit(); // Request file gets deleted when the VM exits
+
+        // Write the content of the resource to the temporary file
+        try (OutputStream outStream = new FileOutputStream(tempScript)) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = resourceStream.read(buffer)) != -1) {
+                outStream.write(buffer, 0, bytesRead);
+            }
+        } finally {
+            resourceStream.close();
+        }
+
+        return tempScript;
     }
 
     public static void main(String[] args) {
