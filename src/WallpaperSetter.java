@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 
 public class WallpaperSetter extends JFrame {
     private static final Logger LOGGER = Logger.getLogger(WallpaperSetter.class.getName());
-    private static final String imageUrl = "http://185.124.108.230:314/get-random-image";
+    private static final String imageUrl = "http://illuminat3-projects.com:314/get-random-image";
     private static final int TITLE_BAR_HEIGHT = 15;
     private Point initialClick;
 
